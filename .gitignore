@@ -1,6 +1,7 @@
 HELP.md
 .gradle
 build/
+/data/kis/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
