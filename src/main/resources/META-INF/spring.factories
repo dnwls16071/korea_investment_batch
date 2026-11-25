@@ -1,0 +1,1 @@
+org.springframework.boot.EnvironmentPostProcessor=com.project.korea_investment_batch.BatchEnvironmentPostProcessor

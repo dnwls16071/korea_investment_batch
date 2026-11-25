@@ -1,13 +1,17 @@
 package com.project.korea_investment_batch;
 
+import com.project.korea_investment_batch.support.BatchIntegrationSupport;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 
-@SpringBootTest
-class KoreaInvestmentBatchApplicationTests {
+import static org.assertj.core.api.Assertions.assertThat;
 
-	@Test
-	void contextLoads() {
-	}
+class KoreaInvestmentBatchApplicationTests extends BatchIntegrationSupport {
+    @Autowired JobRepository repository;
 
+    @Test
+    void loadsBatchRepositoryAgainstMysql() {
+        assertThat(repository.getJobNames()).isEmpty();
+    }
 }
