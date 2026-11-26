@@ -136,13 +136,13 @@ Java 21과 MySQL 8.4를 사용한다. 로컬에서 `docker compose up -d --wait 
 
 KIS는 공식 다운로드 주소와 시장별 ZIP 이름을 사용한다. OpenDART는 공식 `list.json`을 접수일 내림차순으로 조회한다. 청크 크기, 건수 감소 기준, 페이지 크기, 타임아웃, 재시도와 재조회 범위는 각 모듈의 Java 설정에 정의한다. 통합 시험은 별도 설정 빈으로 로컬 주소와 처리 크기를 주입한다.
 
-`COLLECTION_ENABLED=true`로 일일 Quartz 스케줄을 켠다. 기본 `COLLECTION_CRON`은 Quartz 형식의 `0 30 19 * * ?`이며, 시간대는 `ClockConfig`의 한국 시간을 따른다. 예약을 놓치면 다음 정기 시각부터 실행한다. 트리거 상태는 MySQL JDBC JobStore에 저장하며 Flyway에서 `QRTZ_*` 테이블을 관리한다.
+앱을 일반 기동하면 일일 Quartz 스케줄이 켜지고 프로세스가 계속 실행된다. `COLLECTION_ENABLED=false`로 일정을 끌 수 있다. 기본 `COLLECTION_CRON`은 Quartz 형식의 `0 30 19 * * ?`이며, 시간대는 `ClockConfig`의 한국 시간을 따른다. 예약을 놓치면 다음 정기 시각부터 실행한다. 트리거 상태는 MySQL JDBC JobStore에 저장하며 Flyway에서 `QRTZ_*` 테이블을 관리한다.
 
 Quartz 스키마 V005에서 MySQL 정수 표시 너비만 제거했다. 앱은 기동 시 적용된 마이그레이션을 검사한다. V005의 기존 체크섬과 현재 체크섬이 이번 변경에 해당하고 적용 이력에 다른 불일치가 없을 때 Flyway repair로 체크섬을 정렬하고 다시 검증한다. Quartz 테이블과 저장된 트리거는 재생성하지 않는다. [Flyway repair](https://documentation.red-gate.com/flyway/reference/commands/repair)
 
 Quartz Job이 오늘의 수집을 시작하면 각 모듈이 시장·기준일·리비전을 식별 `JobParameters`로 만든다. 각 Spring Batch Job은 `@JobScope`의 `@JobParameter`로 실행 값을 바인딩하고 모든 Step에서 같은 값을 사용한다.
 
-앱 시작 직후 일일 수집을 한 번 실행하려면 `COLLECTION_RUN_ON_STARTUP=true`를 설정한다. IntelliJ의 Program arguments는 비워 두고, 반복 스케줄을 끈 상태에서 실행하면 된다.
+앱 시작 직후 일일 수집을 한 번 실행하고 종료하려면 `COLLECTION_RUN_ON_STARTUP=true`를 설정한다. IntelliJ의 Program arguments는 비워 둔다. 일회 수집과 아래 운영 명령에서는 스케줄이 기본으로 꺼진다.
 
 ```sh
 COLLECTION_ENABLED=false COLLECTION_RUN_ON_STARTUP=true ./gradlew bootRun
@@ -162,7 +162,7 @@ java -jar build/libs/korea_investment_batch-0.0.1-SNAPSHOT.jar dart list KOSDAQ 
 
 통합 시험은 초기화할 수 있는 전용 MySQL 스키마에서 실행한다. 시험은 해당 스키마의 수집 및 Batch 실행 데이터를 매 사례마다 삭제한다. `BATCH_TEST_JDBC_URL`, `BATCH_TEST_DB_USER`, `BATCH_TEST_DB_PASSWORD`를 설정한 뒤 `./gradlew clean build`로 실행한다. 시험 DB 주소가 없으면 단위 시험만 실행된다.
 
-공식 KIS ZIP 다섯 개를 단일 시점에 검증했다. 기본 후보는 한국 시간 19:30, 직전 건수의 90% 이상, OpenDART 오늘 포함 최근 3일, 페이지 크기 100과 일시 장애 추가 재시도 최대 2회다. OpenDART 실연결, 여러 수집일의 변동 관찰, 원본 보존 기간 확정은 T036에 남아 있다. 일일 스케줄은 기본 비활성 상태다.
+공식 KIS ZIP 다섯 개를 단일 시점에 검증했다. 기본 후보는 한국 시간 19:30, 직전 건수의 90% 이상, OpenDART 오늘 포함 최근 3일, 페이지 크기 100과 일시 장애 추가 재시도 최대 2회다. OpenDART 실연결, 여러 수집일의 변동 관찰, 원본 보존 기간 확정은 T036에 남아 있다.
 
 ## 11. 배치 관측
 
